@@ -1,4 +1,5 @@
-<script src="<?php echo APP_URL;?>assets/plugins/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
 <script src="<?php echo APP_URL;?>assets/plugins/metismenu.js"></script>
 <script src="<?php echo APP_URL;?>assets/scripts/siminta.js"></script>
 
@@ -74,7 +75,7 @@
 </script>
 
 <!-- Page-Level Plugin Scripts-->
-<script src="<?php echo APP_URL;?>assets/plugins/morris/raphael-2.1.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
 
 <?php include_once __DIR__ . '/chatbot_widget.php'; ?>
 

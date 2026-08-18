@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/common.php';
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -6,7 +7,7 @@ if (empty($_SESSION['chatbot_csrf'])) {
     $_SESSION['chatbot_csrf'] = bin2hex(random_bytes(32));
 }
 $chatbotToken = $_SESSION['chatbot_csrf'];
-$chatbotBaseUrl = defined('APP_URL') ? APP_URL : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/invoice/';
+$chatbotBaseUrl = APP_URL;
 $chatbotAvatar = htmlspecialchars($chatbotBaseUrl . 'assets/images/chatbot-avatar.png', ENT_QUOTES, 'UTF-8');
 $chatbotLabel = 'Login Help';
 $chatbotGreeting = 'Hi! I can help with login, registration, and access problems.';

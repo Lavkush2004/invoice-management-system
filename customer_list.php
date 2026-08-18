@@ -32,8 +32,6 @@ if ($userRole === 'customer' && !empty($_SESSION['customer_data']['cus_id'])) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html>
 <body>
     <!-- wrapper -->
     <div id="wrapper">
@@ -109,8 +107,8 @@ if ($userRole === 'customer' && !empty($_SESSION['customer_data']['cus_id'])) {
     <?php require_once __DIR__ . '/includes/footer.php';?>
 
     <!-- Page-Level Plugin Scripts-->
-    <script src="assets/plugins/dataTables/jquery.dataTables.js"></script>
-    <script src="assets/plugins/dataTables/dataTables.bootstrap.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap.min.js"></script>
     <script>
         $(document).ready(function () {
             $('#dataTables-example').dataTable();

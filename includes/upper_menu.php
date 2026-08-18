@@ -1,42 +1,37 @@
-<nav class="navbar navbar-default" role="navigation" id="navbar" style="background:#2c3e50; height:50px; width:100%; margin:0;">
+<nav class="navbar navbar-default" role="navigation" id="navbar" style="background:#2c3e50; min-height:50px; width:100%; margin:0; border:none; border-radius:0;">
     <!-- navbar-header -->
     <div class="navbar-header" style="float: left; display: flex; align-items: center; height: 50px;">
-        <button type="button" id="sidebarToggle" style="margin-left: 10px; background: transparent; border: 1px solid rgba(255,255,255,0.35); color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; line-height: 1;">
-            ☰
+        <button type="button" id="sidebarToggle" style="margin-left: 15px; background: transparent; border: 1px solid rgba(255,255,255,0.35); color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; line-height: 1;">
+            <i class="fa fa-bars"></i>
         </button>
-        <a class="navbar-brand" href="<?php echo APP_URL; ?>" style="display: inline-block; padding-left: 10px; margin-right: 0; color:white;">
+        <a class="navbar-brand" href="<?php echo APP_URL; ?>" style="display: flex; align-items: center; padding-left: 12px; margin-right: 0; color:white; font-size: 15px; font-weight: 600;">
             <?php
-            $username = '';
-            if(isset($_SESSION['vendor_data']) && (count($_SESSION['vendor_data'])>0))
-            {
-                $username = 'First Trade';//$_SESSION['vendor_data']['name'];
-            }
-            else if(isset($_SESSION['admin_data']) && (count($_SESSION['admin_data'])>0))
-            {
+            $username = 'User';
+            if (isset($_SESSION['vendor_data']['name']) && !empty($_SESSION['vendor_data']['name'])) {
+                $username = $_SESSION['vendor_data']['name'];
+            } elseif (isset($_SESSION['admin_data']['username']) && !empty($_SESSION['admin_data']['username'])) {
                 $username = $_SESSION['admin_data']['username'];
-            }
-            else if(isset($_SESSION['customer_data']) && (count($_SESSION['customer_data'])>0))
-            {
+            } elseif (isset($_SESSION['customer_data']['cus_name']) && !empty($_SESSION['customer_data']['cus_name'])) {
                 $username = $_SESSION['customer_data']['cus_name'];
             }
-            echo "<marquee><font color='White'>Welcome $username</font></marquee>";
             ?>
+            <span style="color:#38bdf8; margin-right:6px;"><i class="fa fa-building-o"></i></span> Welcome, <?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>
         </a>
     </div>
     <!-- end navbar-header -->
-    
+
     <!-- navbar-top-links -->
-    <ul class="nav navbar-top-links navbar-right" style="margin:0;">
+    <ul class="nav navbar-top-links navbar-right" style="margin:0; padding-right:15px; display: flex; align-items: center; height: 50px;">
         <!-- main dropdown -->
         <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                <i class="fa fa-user fa-3x"></i>
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="color:#fff; padding:8px 12px; font-size:16px;">
+                <i class="fa fa-user-circle"></i> <i class="fa fa-caret-down"></i>
             </a>
             <!-- dropdown user-->
-            <ul class="dropdown-menu dropdown-user">
-                <li><a href="#"><i class="fa fa-user fa-fw"></i>User Profile</a></li>
+            <ul class="dropdown-menu dropdown-user dropdown-menu-right" style="margin-top: 5px;">
+                <li><a href="<?php echo APP_URL; ?>vendor.php"><i class="fa fa-user fa-fw"></i> Profile / Settings</a></li>
                 <li class="divider"></li>
-                <li><a href="<?php echo APP_URL; ?>logout.php"><i class="fa fa-sign-out fa-fw"></i>Logout</a></li>
+                <li><a href="<?php echo APP_URL; ?>logout.php"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
             </ul>
             <!-- end dropdown-user -->
         </li>

@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__ . '/includes/auth_check.php';
-require_login(array('admin', 'vendor'));
+if (empty($_SESSION['admin_data']) && empty($_SESSION['vendor_data'])) {
+    http_response_code(401);
+    exit('');
+}
 
 if (isset($_REQUEST['number'])) {
     $number = intval($_REQUEST['number']);

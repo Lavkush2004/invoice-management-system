@@ -128,251 +128,222 @@ if ($userType === 'admin') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f5f7;
-            margin: 0;
-        }
-        .topbar {
-            background: #2c3e50;
-            color: #fff;
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .topbar a {
-            color: #fff;
-            text-decoration: none;
-        }
-        .container {
-            padding: 30px 20px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .nav-box {
-            display: block;
-            background: #2c3e50;
-            color: #fff;
-            text-align: center;
-            padding: 25px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .nav-box:nth-child(2n) { background: #1f9d8a; }
-        .nav-box:nth-child(3n) { background: #e67e22; }
-        .nav-box:nth-child(4n) { background: #34495e; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin: 20px 0; }
-        .stat-card { border-radius: 10px; padding: 18px 20px; color: #fff; background: #2c3e50; box-shadow: 0 5px 16px rgba(0,0,0,.1); }
-        .stat-card:nth-child(1) { background: linear-gradient(135deg, #1e293b, #334155); }
-        .stat-card:nth-child(2) { background: linear-gradient(135deg, #0d9488, #14b8a6); }
-        .stat-card:nth-child(3) { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-        .stat-card:nth-child(4) { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        .stat-card:nth-child(5) { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
-        .stat-card:nth-child(6) { background: linear-gradient(135deg, #059669, #10b981); }
-        .stat-card:nth-child(7) { background: linear-gradient(135deg, #db2777, #ec4899); }
-        .stat-card:nth-child(8) { background: linear-gradient(135deg, #475569, #64748b); }
-        .stat-label { display: block; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; opacity: .95; }
-        .stat-value { display: block; margin-top: 6px; font-size: 26px; font-weight: bold; }
-        .stat-note { display: block; margin-top: 5px; font-size: 12px; opacity: .9; }
-        .table-wrap { overflow-x: auto; }
-        .analytics-table { width: 100%; min-width: 720px; border-collapse: collapse; }
-        .analytics-table th, .analytics-table td { padding: 12px; border-bottom: 1px solid #e9edf1; text-align: left; }
-        .analytics-table th { color: #52616b; font-size: 12px; text-transform: uppercase; }
-        .analytics-table td:not(:first-child) { font-weight: 600; }
-    </style>
-</head>
+require_once __DIR__ . '/includes/header.php';
+?>
+<style>
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin: 20px 0; }
+.stat-card { border-radius: 10px; padding: 18px 20px; color: #fff; background: #2c3e50; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.stat-card:nth-child(1) { background: linear-gradient(135deg, #1e293b, #334155); }
+.stat-card:nth-child(2) { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+.stat-card:nth-child(3) { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+.stat-card:nth-child(4) { background: linear-gradient(135deg, #d97706, #f59e0b); }
+.stat-card:nth-child(5) { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+.stat-card:nth-child(6) { background: linear-gradient(135deg, #059669, #10b981); }
+.stat-card:nth-child(7) { background: linear-gradient(135deg, #db2777, #ec4899); }
+.stat-card:nth-child(8) { background: linear-gradient(135deg, #475569, #64748b); }
+.stat-label { display: block; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; opacity: .95; }
+.stat-value { display: block; margin-top: 6px; font-size: 26px; font-weight: bold; }
+.stat-note { display: block; margin-top: 5px; font-size: 12px; opacity: .9; }
+.dash-card { background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+.nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+.nav-box { display: block; background: #2c3e50; color: #fff !important; text-align: center; padding: 20px 16px; border-radius: 8px; text-decoration: none !important; font-weight: bold; transition: transform 0.2s ease, opacity 0.2s ease; }
+.nav-box:hover { transform: translateY(-2px); opacity: 0.95; }
+.nav-box:nth-child(2n) { background: #1f9d8a; }
+.nav-box:nth-child(3n) { background: #e67e22; }
+.nav-box:nth-child(4n) { background: #34495e; }
+.analytics-table { width: 100%; border-collapse: collapse; }
+.analytics-table th, .analytics-table td { padding: 12px; border-bottom: 1px solid #e9edf1; text-align: left; }
+.analytics-table th { color: #52616b; font-size: 12px; text-transform: uppercase; background: #f8fafc; }
+.analytics-table td:not(:first-child) { font-weight: 600; }
+</style>
 <body>
-    <div class="topbar">
-        <div><strong>Invoice Dashboard</strong></div>
-        <div>
-            <span>Welcome <?php echo htmlspecialchars($userName); ?> &nbsp;|&nbsp;</span>
-            <a href="?logout=1">Logout</a>
+    <!-- wrapper -->
+    <div id="wrapper">
+        <!-- navbar top -->
+        <?php require_once __DIR__ . '/includes/upper_menu.php'; ?>
+        <!-- end navbar top -->
+
+        <!-- navbar side -->
+        <?php require_once __DIR__ . '/includes/left_menu.php'; ?>
+        <!-- end navbar side -->
+
+        <!-- page-wrapper -->
+        <div id="page-wrapper">
+            <div class="row">
+                <!-- page header -->
+                <div class="col-lg-12">
+                    <h1 class="page-header">Dashboard</h1>
+                </div>
+                <!--end page header -->
+            </div>
+
+            <?php if ($userType === 'customer') { ?>
+                <div class="dash-card">
+                    <h2><i class="fa fa-user"></i> Customer Portal</h2>
+                    <p>Welcome, <strong><?php echo htmlspecialchars($userName); ?></strong>. Here is your recent purchase activity.</p>
+                    <div class="stats-grid">
+                        <div class="stat-card"><span class="stat-label">Total Bills / Invoices</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Total Purchases</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_spent'], 2); ?></span></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i class="fa fa-shopping-cart"></i> My Recent Purchases</h3>
+                    <div class="table-responsive">
+                        <table class="analytics-table table table-hover">
+                            <thead><tr><th>Invoice #</th><th>Vendor / Company</th><th>Total Amount</th><th>Date</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <?php if (empty($recentInvoices)) { ?>
+                                <tr><td colspan="5" class="text-center">No purchases or bills found yet.</td></tr>
+                            <?php } else { foreach ($recentInvoices as $inv) { ?>
+                                <tr>
+                                    <td>#<?php echo (int) $inv['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($inv['company_name'] ?: 'Vendor'); ?></td>
+                                    <td>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></td>
+                                    <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
+                                    <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View Invoice</a></td>
+                                </tr>
+                            <?php } } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="nav-grid">
+                    <a class="nav-box" href="customer_invoice_search.php"><i class="fa fa-search"></i> Search Invoice</a>
+                    <a class="nav-box" href="customer_invoice_search.php#customerTab"><i class="fa fa-user"></i> Search by My Details</a>
+                </div>
+            <?php } elseif ($userType === 'vendor') { ?>
+                <div class="dash-card">
+                    <h2><i class="fa fa-briefcase"></i> Vendor Dashboard</h2>
+                    <p>Live business overview for <strong><?php echo htmlspecialchars($userName); ?></strong>.</p>
+                    <div class="stats-grid">
+                        <div class="stat-card"><span class="stat-label">My Customers</span><span class="stat-value"><?php echo (int) $adminStats['customers']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">My Total Invoices</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Today's Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['today_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">This Month's Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['month_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Total Revenue</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Top Selling Product</span><span class="stat-value" style="font-size:20px;"><?php echo htmlspecialchars($adminStats['top_product']['product_name']); ?></span><span class="stat-note"><?php echo number_format((float) $adminStats['top_product']['units'], 0); ?> units sold</span></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i class="fa fa-list"></i> My Recent Invoices</h3>
+                    <div class="table-responsive">
+                        <table class="analytics-table table table-hover">
+                            <thead><tr><th>Invoice #</th><th>Customer Name</th><th>Mobile</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <?php if (empty($recentInvoices)) { ?>
+                                <tr><td colspan="6" class="text-center">No invoices created yet.</td></tr>
+                            <?php } else { foreach ($recentInvoices as $inv) { ?>
+                                <tr>
+                                    <td>#<?php echo (int) $inv['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($inv['cus_name'] ?: 'Customer'); ?></td>
+                                    <td><?php echo htmlspecialchars($inv['cus_mobile'] ?: '-'); ?></td>
+                                    <td>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></td>
+                                    <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
+                                    <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View</a></td>
+                                </tr>
+                            <?php } } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="nav-grid">
+                    <a class="nav-box" href="create_bill.php"><i class="fa fa-plus"></i> Create Invoice</a>
+                    <a class="nav-box" href="invoice_list.php"><i class="fa fa-file-text-o"></i> Invoice List</a>
+                    <a class="nav-box" href="customer_list.php"><i class="fa fa-users"></i> Customer List</a>
+                    <a class="nav-box" href="vendor.php"><i class="fa fa-cog"></i> My Profile</a>
+                </div>
+            <?php } else { ?>
+                <div class="dash-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h2 style="margin:0 0 5px;"><i class="fa fa-shield"></i> Admin Control Center</h2>
+                        <p style="margin:0; color:#64748b;">Real-time synchronized data across all vendors, customer registrations, and sales.</p>
+                    </div>
+                    <div>
+                        <a href="index.php" class="btn btn-sm btn-info" style="font-weight:bold;"><i class="fa fa-refresh"></i> Refresh Live Data</a>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i class="fa fa-bar-chart"></i> System-wide Business Overview</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card"><span class="stat-label">Total Active Vendors</span><span class="stat-value"><?php echo (int) $adminStats['vendors']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Total System Customers</span><span class="stat-value"><?php echo (int) $adminStats['customers']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Total Invoices Created</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Today's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['today_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">This Month's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['month_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">This Year's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['year_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">All-Time Total Revenue</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_sales'], 2); ?></span></div>
+                        <div class="stat-card"><span class="stat-label">Highest-Demand Product</span><span class="stat-value" style="font-size:20px;"><?php echo htmlspecialchars($adminStats['top_product']['product_name']); ?></span><span class="stat-note"><?php echo number_format((float) $adminStats['top_product']['units'], 0); ?> total units sold</span></div>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i class="fa fa-building"></i> Live Vendor Performance & Sales</h3>
+                    <div class="table-responsive">
+                        <table class="analytics-table table table-hover">
+                            <thead><tr><th>Vendor / Company</th><th>Contact</th><th>Customers Added</th><th>Invoices Created</th><th>Today Sales</th><th>This Month</th><th>Total Revenue</th></tr></thead>
+                            <tbody>
+                            <?php if (empty($vendorStats)) { ?>
+                                <tr><td colspan="7" class="text-center">No vendors registered yet.</td></tr>
+                            <?php } else { foreach ($vendorStats as $vendor) { ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($vendor['name'] ?: 'Unnamed vendor'); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($vendor['email'] ?: $vendor['mobile'] ?: '-'); ?></td>
+                                    <td><span class="badge" style="background:#2c3e50;"><?php echo (int) $vendor['customer_count']; ?></span></td>
+                                    <td><span class="badge" style="background:#1f9d8a;"><?php echo (int) $vendor['invoice_count']; ?></span></td>
+                                    <td>₹<?php echo number_format((float) $vendor['today_sales'], 2); ?></td>
+                                    <td>₹<?php echo number_format((float) $vendor['month_sales'], 2); ?></td>
+                                    <td><strong>₹<?php echo number_format((float) $vendor['total_sales'], 2); ?></strong></td>
+                                </tr>
+                            <?php } } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h3><i class="fa fa-file-text-o"></i> Recent System Sales & Invoices</h3>
+                    <div class="table-responsive">
+                        <table class="analytics-table table table-hover">
+                            <thead><tr><th>Invoice #</th><th>Vendor / Company</th><th>Customer Name</th><th>Mobile</th><th>Amount</th><th>Date & Time</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <?php if (empty($recentInvoices)) { ?>
+                                <tr><td colspan="7" class="text-center">No sales recorded in the system yet.</td></tr>
+                            <?php } else { foreach ($recentInvoices as $inv) { ?>
+                                <tr>
+                                    <td>#<?php echo (int) $inv['id']; ?></td>
+                                    <td><span class="label label-info"><?php echo htmlspecialchars($inv['company_name'] ?: 'Vendor'); ?></span></td>
+                                    <td><?php echo htmlspecialchars($inv['cus_name'] ?: 'Customer'); ?></td>
+                                    <td><?php echo htmlspecialchars($inv['cus_mobile'] ?: '-'); ?></td>
+                                    <td><strong>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></strong></td>
+                                    <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
+                                    <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="fa fa-eye"></i> View / Print</a></td>
+                                </tr>
+                            <?php } } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="nav-grid">
+                    <a class="nav-box" href="create_bill.php"><i class="fa fa-plus"></i> Create Invoice</a>
+                    <a class="nav-box" href="invoice_list.php"><i class="fa fa-file-text-o"></i> All Invoices</a>
+                    <a class="nav-box" href="customer_list.php"><i class="fa fa-users"></i> All Customers</a>
+                    <a class="nav-box" href="vendor_list.php"><i class="fa fa-briefcase"></i> All Vendors</a>
+                </div>
+            <?php } ?>
         </div>
+        <!-- end page-wrapper -->
     </div>
+    <!-- end wrapper -->
 
-    <div class="container">
-        <?php if ($userType === 'customer') { ?>
-            <div class="card">
-                <h2>Customer Portal</h2>
-                <p>Welcome, <strong><?php echo htmlspecialchars($userName); ?></strong>. Here is your recent purchase activity.</p>
-                <div class="stats-grid">
-                    <div class="stat-card"><span class="stat-label">Total Bills / Invoices</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Total Purchases</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_spent'], 2); ?></span></div>
-                </div>
-            </div>
+    <!-- Core Scripts - Include with every page -->
+    <?php require_once __DIR__ . '/includes/footer.php'; ?>
 
-            <div class="card">
-                <h3>My Recent Purchases</h3>
-                <div class="table-wrap">
-                    <table class="analytics-table">
-                        <thead><tr><th>Invoice #</th><th>Vendor / Company</th><th>Total Amount</th><th>Date</th><th>Action</th></tr></thead>
-                        <tbody>
-                        <?php if (empty($recentInvoices)) { ?>
-                            <tr><td colspan="5">No purchases or bills found yet.</td></tr>
-                        <?php } else { foreach ($recentInvoices as $inv) { ?>
-                            <tr>
-                                <td>#<?php echo (int) $inv['id']; ?></td>
-                                <td><?php echo htmlspecialchars($inv['company_name'] ?: 'Vendor'); ?></td>
-                                <td>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></td>
-                                <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
-                                <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-eye-open"></i> View Invoice</a></td>
-                            </tr>
-                        <?php } } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="nav-grid">
-                <a class="nav-box" href="customer_invoice_search.php">Search Invoice</a>
-                <a class="nav-box" href="customer_invoice_search.php#customerTab">Search by My Details</a>
-            </div>
-        <?php } elseif ($userType === 'vendor') { ?>
-            <div class="card">
-                <h2>Vendor Dashboard</h2>
-                <p>Live business overview for <strong><?php echo htmlspecialchars($userName); ?></strong>.</p>
-                <div class="stats-grid">
-                    <div class="stat-card"><span class="stat-label">My Customers</span><span class="stat-value"><?php echo (int) $adminStats['customers']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">My Total Invoices</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Today's Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['today_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">This Month's Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['month_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Total Revenue</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Top Selling Product</span><span class="stat-value" style="font-size:20px;"><?php echo htmlspecialchars($adminStats['top_product']['product_name']); ?></span><span class="stat-note"><?php echo number_format((float) $adminStats['top_product']['units'], 0); ?> units sold</span></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>My Recent Invoices</h3>
-                <div class="table-wrap">
-                    <table class="analytics-table">
-                        <thead><tr><th>Invoice #</th><th>Customer Name</th><th>Mobile</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead>
-                        <tbody>
-                        <?php if (empty($recentInvoices)) { ?>
-                            <tr><td colspan="6">No invoices created yet.</td></tr>
-                        <?php } else { foreach ($recentInvoices as $inv) { ?>
-                            <tr>
-                                <td>#<?php echo (int) $inv['id']; ?></td>
-                                <td><?php echo htmlspecialchars($inv['cus_name'] ?: 'Customer'); ?></td>
-                                <td><?php echo htmlspecialchars($inv['cus_mobile'] ?: '-'); ?></td>
-                                <td>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></td>
-                                <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
-                                <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-eye-open"></i> View</a></td>
-                            </tr>
-                        <?php } } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="nav-grid">
-                <a class="nav-box" href="create_bill.php"><i class="glyphicon glyphicon-plus"></i> Create Invoice</a>
-                <a class="nav-box" href="invoice_list.php"><i class="glyphicon glyphicon-list-alt"></i> Invoice List</a>
-                <a class="nav-box" href="customer_list.php"><i class="glyphicon glyphicon-user"></i> Customer List</a>
-                <a class="nav-box" href="vendor.php"><i class="glyphicon glyphicon-briefcase"></i> My Profile</a>
-            </div>
-        <?php } else { ?>
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div>
-                    <h2 style="margin:0 0 5px;">Admin Control Center</h2>
-                    <p style="margin:0; color:#64748b;">Real-time synchronized data across all vendors, customer registrations, and sales.</p>
-                </div>
-                <div>
-                    <a href="index.php" class="btn btn-sm btn-info" style="font-weight:bold;"><i class="glyphicon glyphicon-refresh"></i> Refresh Live Data</a>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>System-wide Business Overview</h3>
-                <p>All metrics update automatically and include all registered vendors, customers, and invoice sales.</p>
-                <div class="stats-grid">
-                    <div class="stat-card"><span class="stat-label">Total Active Vendors</span><span class="stat-value"><?php echo (int) $adminStats['vendors']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Total System Customers</span><span class="stat-value"><?php echo (int) $adminStats['customers']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Total Invoices Created</span><span class="stat-value"><?php echo (int) $adminStats['invoices']; ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Today's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['today_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">This Month's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['month_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">This Year's Total Sales</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['year_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">All-Time Total Revenue</span><span class="stat-value">₹<?php echo number_format((float) $adminStats['total_sales'], 2); ?></span></div>
-                    <div class="stat-card"><span class="stat-label">Highest-Demand Product</span><span class="stat-value" style="font-size:20px;"><?php echo htmlspecialchars($adminStats['top_product']['product_name']); ?></span><span class="stat-note"><?php echo number_format((float) $adminStats['top_product']['units'], 0); ?> total units sold</span></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Live Vendor Performance & Sales</h3>
-                <div class="table-wrap">
-                    <table class="analytics-table">
-                        <thead><tr><th>Vendor / Company</th><th>Contact</th><th>Customers Added</th><th>Invoices Created</th><th>Today Sales</th><th>This Month</th><th>Total Revenue</th></tr></thead>
-                        <tbody>
-                        <?php if (empty($vendorStats)) { ?>
-                            <tr><td colspan="7">No vendors registered yet.</td></tr>
-                        <?php } else { foreach ($vendorStats as $vendor) { ?>
-                            <tr>
-                                <td><strong><?php echo htmlspecialchars($vendor['name'] ?: 'Unnamed vendor'); ?></strong></td>
-                                <td><?php echo htmlspecialchars($vendor['email'] ?: $vendor['mobile'] ?: '-'); ?></td>
-                                <td><span class="badge" style="background:#2c3e50;"><?php echo (int) $vendor['customer_count']; ?></span></td>
-                                <td><span class="badge" style="background:#1f9d8a;"><?php echo (int) $vendor['invoice_count']; ?></span></td>
-                                <td>₹<?php echo number_format((float) $vendor['today_sales'], 2); ?></td>
-                                <td>₹<?php echo number_format((float) $vendor['month_sales'], 2); ?></td>
-                                <td><strong>₹<?php echo number_format((float) $vendor['total_sales'], 2); ?></strong></td>
-                            </tr>
-                        <?php } } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Recent System Sales & Invoices</h3>
-                <div class="table-wrap">
-                    <table class="analytics-table">
-                        <thead><tr><th>Invoice #</th><th>Vendor / Company</th><th>Customer Name</th><th>Mobile</th><th>Amount</th><th>Date & Time</th><th>Action</th></tr></thead>
-                        <tbody>
-                        <?php if (empty($recentInvoices)) { ?>
-                            <tr><td colspan="7">No sales recorded in the system yet.</td></tr>
-                        <?php } else { foreach ($recentInvoices as $inv) { ?>
-                            <tr>
-                                <td>#<?php echo (int) $inv['id']; ?></td>
-                                <td><span class="label label-info"><?php echo htmlspecialchars($inv['company_name'] ?: 'Vendor'); ?></span></td>
-                                <td><?php echo htmlspecialchars($inv['cus_name'] ?: 'Customer'); ?></td>
-                                <td><?php echo htmlspecialchars($inv['cus_mobile'] ?: '-'); ?></td>
-                                <td><strong>₹<?php echo number_format((float) $inv['total_amt'], 2); ?></strong></td>
-                                <td><?php echo date('d M Y, h:i A', (int) $inv['created_date']); ?></td>
-                                <td><a href="invoiceDetail.php?inv_id=<?php echo (int) $inv['id']; ?>" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-eye-open"></i> View / Print</a></td>
-                            </tr>
-                        <?php } } ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="nav-grid">
-                <a class="nav-box" href="create_bill.php"><i class="glyphicon glyphicon-plus"></i> Create Invoice</a>
-                <a class="nav-box" href="invoice_list.php"><i class="glyphicon glyphicon-list-alt"></i> All Invoices</a>
-                <a class="nav-box" href="customer_list.php"><i class="glyphicon glyphicon-user"></i> All Customers</a>
-                <a class="nav-box" href="vendor_list.php"><i class="glyphicon glyphicon-briefcase"></i> All Vendors</a>
-            </div>
-        <?php } ?>
-    </div>
     <!-- Logout Confirmation Modal UI -->
     <div id="logoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
         <div style="background:#fff; border-radius:12px; max-width:400px; width:90%; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.25); text-align:center;">
@@ -386,7 +357,6 @@ if ($userType === 'admin') {
         </div>
     </div>
 
-    <?php require_once __DIR__ . '/includes/chatbot_widget.php'; ?>
     <script>
         (function () {
             var modal = document.getElementById('logoutModal');
@@ -413,14 +383,14 @@ if ($userType === 'admin') {
                 showModal();
             });
 
-            // Also attach custom UI to topbar logout link
-            var logoutLink = document.querySelector('.topbar a[href="?logout=1"]');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', function (e) {
+            // Also attach custom UI to logout links
+            var logoutLinks = document.querySelectorAll('a[href="?logout=1"], a[href$="logout.php"]');
+            logoutLinks.forEach(function (link) {
+                link.addEventListener('click', function (e) {
                     e.preventDefault();
                     showModal();
                 });
-            }
+            });
         }());
     </script>
 </body>

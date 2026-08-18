@@ -1,17 +1,7 @@
 <?php
+require_once __DIR__ . '/includes/common.php';
 require_once __DIR__ . '/includes/connection_mysql.php';
 require_once __DIR__ . '/includes/auth_check.php';
-
-if (!defined('APP_URL')) {
-    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    define('APP_URL', $scheme . '://' . $host . '/invoice/');
-}
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params(array('httponly' => true, 'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'), 'samesite' => 'Lax'));
-    session_start();
-}
 
 // Authentication is handled centrally so login cannot diverge from authorization rules.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {

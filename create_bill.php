@@ -3,8 +3,6 @@ require_once __DIR__ . '/includes/auth_check.php';
 $userRole = require_login(array('admin', 'vendor'));
 require_once __DIR__ . '/includes/header.php';
 ?>
-<!DOCTYPE html>
-<html>
 <body>
     <!-- wrapper -->
     <div id="wrapper">
@@ -246,10 +244,11 @@ require_once __DIR__ . '/includes/header.php';
                 body: formData.toString()
             })
             .then(function (response) {
+                if (!response.ok) return '';
                 return response.text();
             })
             .then(function (suc) {
-                if (suc && suc.trim() !== '') {
+                if (suc && suc.trim() !== '' && !suc.includes('<!DOCTYPE') && !suc.includes('<html')) {
                     var anchor = document.getElementById('add_' + old_number);
                     if (anchor) {
                         anchor.insertAdjacentHTML('afterend', suc);
