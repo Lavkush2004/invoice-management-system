@@ -11,4 +11,4 @@ if (is_file($localConfig)) {
     require_once $localConfig;
 }
 
-define('CHATBOT_API_KEY', getenv('OPENROUTER_API_KEY') ?: (defined('CHATBOT_LOCAL_API_KEY') ? CHATBOT_LOCAL_API_KEY : ''));
+define('CHATBOT_API_KEY', getenv('OPENROUTER_API_KEY') ?: getenv('CHATBOT_API_KEY') ?: (defined('CHATBOT_LOCAL_API_KEY') ? CHATBOT_LOCAL_API_KEY : ''));
