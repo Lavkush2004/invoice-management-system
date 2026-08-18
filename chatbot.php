@@ -1,7 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/includes/common.php';
 header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: no-store');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 require_once __DIR__ . '/includes/chatbot_config.php';
 
@@ -81,8 +81,9 @@ curl_setopt_array($curl, array(
     CURLOPT_HTTPHEADER => array(
         'Content-Type: application/json',
         'Authorization: Bearer ' . CHATBOT_API_KEY,
-        'HTTP-Referer: ' . (isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost'),
-        'X-OpenRouter-Title: Online Invoice System'
+        'HTTP-Referer: ' . (isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : (defined('APP_URL') ? APP_URL : 'http://localhost')),
+        'X-OpenRouter-Title: Online Invoice System',
+        'User-Agent: InvoiceSystem/1.0'
     ),
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_CONNECTTIMEOUT => 10,
@@ -99,8 +100,9 @@ if ($response === false) {
 
 $data = json_decode($response, true);
 if ($httpCode < 200 || $httpCode >= 300) {
+    $apiError = isset($data['error']['message']) ? $data['error']['message'] : ('API responded with HTTP ' . $httpCode);
     error_log('Chatbot API error (' . $httpCode . '): ' . $response);
-    chatbot_reply(502, array('error' => 'The chatbot could not answer right now. Please try again shortly.'));
+    chatbot_reply(502, array('error' => 'Chatbot error: ' . $apiError));
 }
 
 $answer = isset($data['choices'][0]['message']['content']) ? trim($data['choices'][0]['message']['content']) : '';

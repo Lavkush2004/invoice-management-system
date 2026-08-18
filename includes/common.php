@@ -34,6 +34,7 @@ if (!empty($docRootNorm) && strpos($appRootNorm, $docRootNorm) === 0) {
 
 $subfolderPath = ($subfolder !== '') ? '/' . $subfolder : '';
 $defaultAppUrl = $scheme . '://' . $host . $subfolderPath;
+define('APP_PATH', ($subfolderPath !== '' ? $subfolderPath : '') . '/');
 define('APP_URL', rtrim(getenv('APP_URL') ?: $defaultAppUrl, '/') . '/');
 define('APP_URL_SERVER', $scheme . '://' . $host);
 define('APP_ROOT_URL', APP_ROOT . DIRECTORY_SEPARATOR);

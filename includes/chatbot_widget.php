@@ -7,7 +7,7 @@ if (empty($_SESSION['chatbot_csrf'])) {
     $_SESSION['chatbot_csrf'] = bin2hex(random_bytes(32));
 }
 $chatbotToken = $_SESSION['chatbot_csrf'];
-$chatbotBaseUrl = APP_URL;
+$chatbotBaseUrl = defined('APP_PATH') ? APP_PATH : (defined('APP_URL') ? APP_URL : '');
 $chatbotAvatar = htmlspecialchars($chatbotBaseUrl . 'assets/images/chatbot-avatar.png', ENT_QUOTES, 'UTF-8');
 $chatbotLabel = 'Login Help';
 $chatbotGreeting = 'Hi! I can help with login, registration, and access problems.';
@@ -63,11 +63,36 @@ if (isset($_SESSION['admin_data'])) {
             event.preventDefault(); var message = input.value.trim(); if (!message) return;
             addMessage(message, 'user'); input.value = ''; input.disabled = true; send.disabled = true;
             var waiting = addMessage('Thinking...', 'bot');
-            fetch('<?php echo $chatbotBaseUrl; ?>chatbot.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:message, csrf_token:'<?php echo $chatbotToken; ?>'}) })
-                .then(function (response) { return response.json(); })
-                .then(function (data) { waiting.textContent = data.answer || data.error || 'Something went wrong. Please try again.'; })
-                .catch(function () { waiting.textContent = 'Could not reach the chatbot. Please try again.'; })
-                .then(function () { input.disabled = false; send.disabled = false; input.focus(); messages.scrollTop = messages.scrollHeight; });
+            fetch('<?php echo $chatbotBaseUrl; ?>chatbot.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ message: message, csrf_token: '<?php echo $chatbotToken; ?>' })
+            })
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    return { ok: response.ok, status: response.status, data: data };
+                }).catch(function () {
+                    return { ok: false, status: response.status, data: { error: 'Invalid response from server.' } };
+                });
+            })
+            .then(function (res) {
+                if (res.ok && res.data && res.data.answer) {
+                    waiting.textContent = res.data.answer;
+                } else {
+                    waiting.textContent = (res.data && res.data.error) ? res.data.error : 'Something went wrong. Please try again.';
+                }
+            })
+            .catch(function (err) {
+                console.error('Chatbot error:', err);
+                waiting.textContent = 'Could not reach the chatbot service. Please check your network and try again.';
+            })
+            .then(function () {
+                input.disabled = false;
+                send.disabled = false;
+                input.focus();
+                messages.scrollTop = messages.scrollHeight;
+            });
         });
     }());
 </script>
