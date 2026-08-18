@@ -1,0 +1,13 @@
+# Local configuration and credentials
+.env
+.env.*
+includes/chatbot_config.local.php
+
+# Editor & OS files
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+

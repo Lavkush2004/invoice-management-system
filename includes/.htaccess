@@ -1,0 +1,4 @@
+<FilesMatch ".*\.(php|inc|sql|json|log)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
