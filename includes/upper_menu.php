@@ -22,6 +22,11 @@
 
     <!-- navbar-top-links -->
     <ul class="nav navbar-top-links navbar-right" style="margin:0; padding-right:15px; display: flex; align-items: center; height: 50px;">
+        <li>
+            <a href="<?php echo APP_URL; ?>logout.php" class="btn btn-danger btn-sm" style="color:#fff !important; background-color:#d9534f; border-color:#d43f3a; padding:5px 12px; margin-right:10px; border-radius:4px; font-weight:bold; font-size:13px; text-decoration:none;">
+                <i class="fa fa-sign-out"></i> Logout
+            </a>
+        </li>
         <!-- main dropdown -->
         <li class="dropdown">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#" style="color:#fff; padding:8px 12px; font-size:16px;">

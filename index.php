@@ -343,55 +343,6 @@ require_once __DIR__ . '/includes/header.php';
 
     <!-- Core Scripts - Include with every page -->
     <?php require_once __DIR__ . '/includes/footer.php'; ?>
-
-    <!-- Logout Confirmation Modal UI -->
-    <div id="logoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-        <div style="background:#fff; border-radius:12px; max-width:400px; width:90%; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.25); text-align:center;">
-            <div style="width:50px; height:50px; background:#fee2e2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:22px; font-weight:bold;">&#10007;</div>
-            <h3 style="margin:0 0 8px; color:#1e293b; font-size:20px; font-weight:600;">Confirm Logout</h3>
-            <p style="margin:0 0 20px; color:#64748b; font-size:14px; line-height:1.5;">Are you sure you want to log out of your session?</p>
-            <div style="display:flex; gap:12px; justify-content:center;">
-                <button id="cancelLogoutBtn" type="button" style="flex:1; padding:10px 16px; border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:6px; font-weight:600; cursor:pointer;">Cancel</button>
-                <a href="?logout=1" style="flex:1; padding:10px 16px; background:#ef4444; color:#fff; border-radius:6px; font-weight:600; text-decoration:none; display:inline-block; line-height:1.4;">Logout</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        (function () {
-            var modal = document.getElementById('logoutModal');
-            var cancelBtn = document.getElementById('cancelLogoutBtn');
-
-            function showModal() {
-                if (modal) modal.style.display = 'flex';
-            }
-
-            function hideModal() {
-                if (modal) modal.style.display = 'none';
-            }
-
-            if (cancelBtn) {
-                cancelBtn.addEventListener('click', function () {
-                    hideModal();
-                    history.pushState(null, document.title, location.href);
-                });
-            }
-
-            // Intercept browser back button
-            history.pushState(null, document.title, location.href);
-            window.addEventListener('popstate', function () {
-                showModal();
-            });
-
-            // Also attach custom UI to logout links
-            var logoutLinks = document.querySelectorAll('a[href="?logout=1"], a[href$="logout.php"]');
-            logoutLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    showModal();
-                });
-            });
-        }());
-    </script>
+    <?php require_once __DIR__ . '/includes/chatbot_widget.php'; ?>
 </body>
 </html>
