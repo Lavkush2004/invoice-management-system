@@ -20,11 +20,10 @@ A modern PHP-based multi-tenant invoice and billing management system with multi
 
 ### Step 1: Push Code to GitHub
 
-1. Create a new repository on [GitHub](https://github.com/new).
-2. Push your project:
+1. Push your project to GitHub:
    ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
    git branch -M main
+   git remote add origin https://github.com/Lavkush2004/invoice-management-system.git
    git push -u origin main
    ```
 
