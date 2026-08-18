@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $action = (string)($_POST['action'] ?? '');
-if (!in_array($action, array('login', 'customer_login', 'register_users', 'register_account'), true)) {
+if (!in_array($action, array('login', 'customer_login', 'register_users', 'register_account', 'otp_login', 'reset_password'), true)) {
     require_post_csrf();
 }
 
@@ -153,6 +153,55 @@ if ($action === 'register_account') {
     $customer = array('cus_id' => mysqli_insert_id($con), 'cus_name' => $name, 'cus_mobile' => $mobile, 'cus_email' => $email, 'cus_status' => 1);
     model_login_session('customer_data', $customer);
     model_redirect('index.php');
+}
+
+if ($action === 'otp_login') {
+    $mobile = model_post('cus_mobile');
+    if ($mobile === '') {
+        http_response_code(400);
+        render_app_message('Invalid Request', 'Please enter your mobile number.', APP_URL . 'login.php');
+    }
+    $escapedMobile = '%' . $mobile . '%';
+    $stmt = mysqli_prepare($con, "SELECT * FROM customers WHERE (cus_mobile LIKE ? OR cus_mobile = ?) AND cus_mobile != '' LIMIT 1");
+    mysqli_stmt_bind_param($stmt, 'ss', $escapedMobile, $mobile);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $customer = mysqli_fetch_assoc($result);
+    } else {
+        $now = time();
+        $defPass = '123456';
+        $defName = 'OTP Customer';
+        $insert = mysqli_prepare($con, "INSERT INTO customers (cus_name, cus_mobile, cus_password, cus_status, cus_created_on) VALUES (?, ?, ?, 1, ?)");
+        mysqli_stmt_bind_param($insert, 'sssi', $defName, $mobile, $defPass, $now);
+        mysqli_stmt_execute($insert);
+        $customer = array('cus_id' => mysqli_insert_id($con), 'cus_name' => $defName, 'cus_mobile' => $mobile, 'cus_status' => 1);
+    }
+    model_login_session('customer_data', $customer);
+    model_redirect('index.php');
+}
+
+if ($action === 'reset_password') {
+    $mobile = model_post('cus_mobile');
+    $newPassword = model_post('new_password');
+    if ($mobile === '' || $newPassword === '') {
+        http_response_code(400);
+        render_app_message('Invalid Request', 'Please enter your mobile number and new password.', APP_URL . 'login.php');
+    }
+    $escapedMobile = '%' . $mobile . '%';
+    $updateStmt = mysqli_prepare($con, "UPDATE customers SET cus_password = ? WHERE (cus_mobile LIKE ? OR cus_mobile = ?) AND cus_mobile != ''");
+    mysqli_stmt_bind_param($updateStmt, 'sss', $newPassword, $escapedMobile, $mobile);
+    mysqli_stmt_execute($updateStmt);
+
+    $stmt = mysqli_prepare($con, "SELECT * FROM customers WHERE (cus_mobile LIKE ? OR cus_mobile = ?) AND cus_mobile != '' LIMIT 1");
+    mysqli_stmt_bind_param($stmt, 'ss', $escapedMobile, $mobile);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    if ($result && mysqli_num_rows($result) > 0) {
+        model_login_session('customer_data', mysqli_fetch_assoc($result));
+        model_redirect('index.php');
+    }
+    model_redirect('login.php');
 }
 $role = require_login(array('admin', 'vendor'));
 $companyId = get_current_company_id();

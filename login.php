@@ -3,198 +3,25 @@ require_once __DIR__ . '/includes/common.php';
 require_once __DIR__ . '/includes/connection_mysql.php';
 require_once __DIR__ . '/includes/auth_check.php';
 
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0');
+header('Pragma: no-cache');
+header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+
 // Authentication is handled centrally so login cannot diverge from authorization rules.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { http_response_code(403); exit('Invalid request token.'); }
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        http_response_code(403);
+        render_app_message('Session Expired', 'Your security token expired or was invalid. Please return to the login page and try again.', APP_URL . 'login.php');
+    }
     require_once __DIR__ . '/model/common.php';
     exit;
 }
 
-$isLoginSubmit = false;
 $csrfToken = require_csrf_token();
 
-if (!$isLoginSubmit && (isset($_SESSION['admin_data']) || isset($_SESSION['vendor_data']) || isset($_SESSION['customer_data']))) {
+if (isset($_SESSION['admin_data']) || isset($_SESSION['vendor_data']) || isset($_SESSION['customer_data'])) {
     header('Location: ' . APP_URL . 'index.php');
     exit;
-}
-
-if ($isLoginSubmit) {
-    $action = $_POST['action'];
-
-    if ($action === 'login') {
-        $email = trim($_POST['email'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-
-        $_SESSION = array();
-
-        $query = "SELECT * FROM users WHERE (username = '" . mysqli_real_escape_string($con, $email) . "' OR email = '" . mysqli_real_escape_string($con, $email) . "') AND password = '" . mysqli_real_escape_string($con, $password) . "' AND status = 1 LIMIT 1";
-        $result = mysqli_query($con, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $user = mysqli_fetch_assoc($result);
-            if ($user['role'] == '1') {
-                $_SESSION['admin_data'] = $user;
-                $adminCompany = mysqli_query($con, "SELECT userid FROM companies WHERE userid = " . (int)$user['id'] . " LIMIT 1");
-                if ($adminCompany && mysqli_num_rows($adminCompany) > 0) {
-                    $_SESSION['admin_data']['company_id'] = (int)mysqli_fetch_assoc($adminCompany)['userid'];
-                } else {
-                    $adminName = mysqli_real_escape_string($con, $user['username'] ?? 'Admin');
-                    $adminEmail = mysqli_real_escape_string($con, $user['email'] ?? '');
-                    mysqli_query($con, "INSERT INTO companies (userid, name, email, created_on) VALUES (" . (int)$user['id'] . ", '$adminName', '$adminEmail', " . time() . ")");
-                    $_SESSION['admin_data']['company_id'] = (int)$user['id'];
-                }
-            } elseif ($user['role'] == '2') {
-                $company = mysqli_query($con, "SELECT * FROM companies WHERE userid = " . (int)$user['id'] . " LIMIT 1");
-                if ($company && mysqli_num_rows($company) > 0) {
-                    $_SESSION['vendor_data'] = mysqli_fetch_assoc($company);
-                }
-            }
-            header('Location: ' . APP_URL . 'index.php');
-            exit;
-        }
-    }
-
-    if ($action === 'customer_login') {
-        $mobile = trim($_POST['cus_mobile'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-
-        $_SESSION = array();
-
-        if ($mobile === '9999999999' && $password === '123456') {
-            $_SESSION['customer_data'] = array('cus_id' => 1, 'cus_name' => 'Jonny Deen', 'cus_mobile' => '9999999999', 'cus_password' => '123456', 'cus_status' => 1);
-            header('Location: ' . APP_URL . 'index.php');
-            exit;
-        }
-
-        $query = "SELECT * FROM customers WHERE cus_mobile = '" . mysqli_real_escape_string($con, $mobile) . "' AND cus_password = '" . mysqli_real_escape_string($con, $password) . "' LIMIT 1";
-        $result = mysqli_query($con, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $_SESSION['customer_data'] = mysqli_fetch_assoc($result);
-            header('Location: ' . APP_URL . 'index.php');
-            exit;
-        }
-    }
-
-    if ($action === 'register_account') {
-        $accountType = strtolower(trim($_POST['account_type'] ?? 'customer'));
-        $name = trim($_POST['name'] ?? '');
-        $mobile = trim($_POST['mobile'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-
-        if (!empty($name) && !empty($password)) {
-            $_SESSION = array();
-
-            if ($accountType === 'customer') {
-                $escapedMobile = mysqli_real_escape_string($con, $mobile);
-                $escapedEmail = mysqli_real_escape_string($con, $email);
-                $escapedName = mysqli_real_escape_string($con, $name);
-                $escapedPassword = mysqli_real_escape_string($con, $password);
-
-                $check = mysqli_query($con, "SELECT * FROM customers WHERE (cus_mobile = '$escapedMobile' AND cus_mobile != '') OR (cus_email = '$escapedEmail' AND cus_email != '') LIMIT 1");
-                if ($check && mysqli_num_rows($check) > 0) {
-                    $_SESSION['customer_data'] = mysqli_fetch_assoc($check);
-                } else {
-                    $insertSql = "INSERT INTO customers (cus_name, cus_mobile, cus_email, cus_password, cus_status, cus_created_on) VALUES ('$escapedName', '$escapedMobile', '$escapedEmail', '$escapedPassword', 1, " . time() . ")";
-                    if (mysqli_query($con, $insertSql)) {
-                        $newId = mysqli_insert_id($con);
-                        $_SESSION['customer_data'] = array(
-                            'cus_id' => $newId,
-                            'cus_name' => $name,
-                            'cus_mobile' => $mobile,
-                            'cus_email' => $email,
-                            'cus_status' => 1
-                        );
-                    }
-                }
-                header('Location: ' . APP_URL . 'index.php');
-                exit;
-            } else {
-                $role = ($accountType === 'admin') ? 1 : 2;
-                $username = !empty($email) ? $email : $mobile;
-                $escapedUsername = mysqli_real_escape_string($con, $username);
-                $escapedEmail = mysqli_real_escape_string($con, $email);
-                $escapedPassword = mysqli_real_escape_string($con, $password);
-                $escapedName = mysqli_real_escape_string($con, $name);
-
-                $check = mysqli_query($con, "SELECT * FROM users WHERE username = '$escapedUsername' OR (email = '$escapedEmail' AND email != '') LIMIT 1");
-                if ($check && mysqli_num_rows($check) > 0) {
-                    $user = mysqli_fetch_assoc($check);
-                    if ($role == 1) {
-                        $_SESSION['admin_data'] = $user;
-                    } else {
-                        $company = mysqli_query($con, "SELECT * FROM companies WHERE userid = " . (int)$user['id'] . " LIMIT 1");
-                        if ($company && mysqli_num_rows($company) > 0) {
-                            $_SESSION['vendor_data'] = mysqli_fetch_assoc($company);
-                        }
-                    }
-                } else {
-                    $insertSql = "INSERT INTO users (username, email, password, role, status) VALUES ('$escapedUsername', '$escapedEmail', '$escapedPassword', $role, 1)";
-                    if (mysqli_query($con, $insertSql)) {
-                        $newUserId = mysqli_insert_id($con);
-                        if ($role == 1) {
-                            $adminCompanySql = "INSERT INTO companies (userid, name, email, created_on) VALUES ($newUserId, '$escapedName', '$escapedEmail', " . time() . ")";
-                            mysqli_query($con, $adminCompanySql);
-                            $_SESSION['admin_data'] = array('id' => $newUserId, 'company_id' => $newUserId, 'username' => $username, 'email' => $email, 'role' => 1);
-                        } else {
-                            $compSql = "INSERT INTO companies (userid, name, email, mobile, created_on) VALUES ($newUserId, '$escapedName', '$escapedEmail', '$escapedName', " . time() . ")";
-                            mysqli_query($con, $compSql);
-                            $_SESSION['vendor_data'] = array('userid' => $newUserId, 'name' => $name, 'email' => $email);
-                        }
-                    }
-                }
-                header('Location: ' . APP_URL . 'index.php');
-                exit;
-            }
-        }
-    }
-
-    if ($action === 'otp_login') {
-        $mobile = trim($_POST['cus_mobile'] ?? '');
-        $escapedMobile = mysqli_real_escape_string($con, $mobile);
-
-        $query = "SELECT * FROM customers WHERE cus_mobile LIKE '%$escapedMobile%' AND cus_mobile != '' LIMIT 1";
-        $result = mysqli_query($con, $query);
-        if ($result && mysqli_num_rows($result) > 0) {
-            $_SESSION['customer_data'] = mysqli_fetch_assoc($result);
-        } else {
-            $insertSql = "INSERT INTO customers (cus_name, cus_mobile, cus_password, cus_status, cus_created_on) VALUES ('OTP Customer', '$escapedMobile', '123456', 1, " . time() . ")";
-            if (mysqli_query($con, $insertSql)) {
-                $newId = mysqli_insert_id($con);
-                $_SESSION['customer_data'] = array(
-                    'cus_id' => $newId,
-                    'cus_name' => 'OTP Customer',
-                    'cus_mobile' => $mobile,
-                    'cus_status' => 1
-                );
-            }
-        }
-        header('Location: ' . APP_URL . 'index.php');
-        exit;
-    }
-
-    if ($action === 'reset_password') {
-        $mobile = trim($_POST['cus_mobile'] ?? '');
-        $newPassword = trim($_POST['new_password'] ?? '');
-        $escapedMobile = mysqli_real_escape_string($con, $mobile);
-        $escapedPassword = mysqli_real_escape_string($con, $newPassword);
-
-        if (!empty($mobile) && !empty($newPassword)) {
-            mysqli_query($con, "UPDATE customers SET cus_password = '$escapedPassword' WHERE cus_mobile LIKE '%$escapedMobile%' AND cus_mobile != ''");
-            $query = "SELECT * FROM customers WHERE cus_mobile LIKE '%$escapedMobile%' LIMIT 1";
-            $result = mysqli_query($con, $query);
-            if ($result && mysqli_num_rows($result) > 0) {
-                $_SESSION['customer_data'] = mysqli_fetch_assoc($result);
-                header('Location: ' . APP_URL . 'index.php');
-                exit;
-            }
-        }
-    }
-
-    if ($action === 'login') {
-        $adminLoginError = 'Login failed. Please check your credentials.';
-    } elseif ($action === 'customer_login') {
-        $customerLoginError = 'Login failed. Please check your credentials.';
-    }
 }
 ?>
 <!DOCTYPE html>
@@ -357,6 +184,7 @@ if ($isLoginSubmit) {
                         <p class="auth-notice">Enter your registered mobile number to receive a password reset OTP.</p>
                         <form id="forgot-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                             <input type="hidden" name="action" value="reset_password">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                             <div class="form-group">
                                 <label>Registered mobile number</label>
                                 <input class="form-control" type="tel" name="cus_mobile" id="forgot_mobile" placeholder="e.g. 9876543210" required>
@@ -383,6 +211,7 @@ if ($isLoginSubmit) {
                         <p class="auth-notice">Enter your registered mobile number to log in via SMS OTP.</p>
                         <form id="otp-form" method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
                             <input type="hidden" name="action" value="otp_login">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                             <div class="form-group">
                                 <label>Mobile number</label>
                                 <input class="form-control" type="tel" name="cus_mobile" id="otp_mobile" placeholder="e.g. 9876543210" required>
@@ -413,6 +242,12 @@ if ($isLoginSubmit) {
 <script src="<?php echo APP_URL; ?>assets/js/firebase_auth.js"></script>
 <script>
     (function () {
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         if (typeof firebaseConfig !== 'undefined' && typeof firebase !== 'undefined' && !firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
             console.log("Firebase initialized successfully with project:", firebaseConfig.projectId);

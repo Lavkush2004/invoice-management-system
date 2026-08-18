@@ -39,7 +39,14 @@ define('APP_URL_SERVER', $scheme . '://' . $host);
 define('APP_ROOT_URL', APP_ROOT . DIRECTORY_SEPARATOR);
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params(array('httponly' => true, 'secure' => ($scheme === 'https'), 'samesite' => 'Lax'));
+    session_set_cookie_params(array(
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => ($scheme === 'https'),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ));
     session_start();
 }
 

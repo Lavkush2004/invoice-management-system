@@ -4,10 +4,13 @@ $userType = require_login(array('admin', 'vendor', 'customer'));
 require_once __DIR__ . '/includes/connection_mysql.php';
 
 if (isset($_GET['logout'])) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0');
+    header('Pragma: no-cache');
+    header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
     $_SESSION = array();
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+        setcookie(session_name(), '', time() - 42000, '/', $params['domain'] ?? '', $params['secure'] ?? false, $params['httponly'] ?? true);
     }
     session_destroy();
     header('Location: ' . (defined('APP_URL') ? APP_URL . 'login.php' : '/invoice/login.php'));
