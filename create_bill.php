@@ -23,10 +23,10 @@ require_once __DIR__ . '/includes/header.php';
 
         $customer_list = array();
 
-        // Get customers for this company
+        // Get customers for this company (or all if admin)
         $table = 'customers';
         $fields = '*';
-        $cond = ' company_id = '.$comp_id;
+        $cond = ($userRole === 'admin') ? '1=1 ORDER BY cus_name ASC' : ' company_id = '.$comp_id.' ORDER BY cus_name ASC';
         $customer_data = Select_Some($fields,$table,$cond);
         if(is_object($customer_data) && mysqli_num_rows($customer_data)>0)
         {

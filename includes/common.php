@@ -11,12 +11,29 @@ $isHttps = (
     (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
 );
 $scheme = $isHttps ? 'https' : 'http';
-$scriptDir = trim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+$appRootNorm = str_replace('\\', '/', realpath(APP_ROOT) ?: APP_ROOT);
+$docRootNorm = isset($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']) ?: $_SERVER['DOCUMENT_ROOT']) : '';
+
 $subfolder = '';
-if ($scriptDir !== '' && $scriptDir !== '.') {
-    $subfolder = '/' . $scriptDir;
+if (!empty($docRootNorm) && strpos($appRootNorm, $docRootNorm) === 0) {
+    $subfolder = trim(substr($appRootNorm, strlen($docRootNorm)), '/');
+} else {
+    $scriptDir = trim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+    if ($scriptDir !== '' && $scriptDir !== '.') {
+        $parts = explode('/', $scriptDir);
+        $filtered = array();
+        foreach ($parts as $p) {
+            if (in_array(strtolower($p), array('model', 'includes', 'api', 'views', 'controllers', 'assets'))) {
+                break;
+            }
+            $filtered[] = $p;
+        }
+        $subfolder = implode('/', $filtered);
+    }
 }
-$defaultAppUrl = $scheme . '://' . $host . $subfolder;
+
+$subfolderPath = ($subfolder !== '') ? '/' . $subfolder : '';
+$defaultAppUrl = $scheme . '://' . $host . $subfolderPath;
 define('APP_URL', rtrim(getenv('APP_URL') ?: $defaultAppUrl, '/') . '/');
 define('APP_URL_SERVER', $scheme . '://' . $host);
 define('APP_ROOT_URL', APP_ROOT . DIRECTORY_SEPARATOR);

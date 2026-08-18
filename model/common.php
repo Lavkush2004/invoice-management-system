@@ -178,8 +178,13 @@ if ($action === 'update_customer_profile' || $action === 'save_customer') {
     $now = time();
 
     if ($customerId > 0) {
-        $stmt = mysqli_prepare($con, 'UPDATE customers SET cus_name=?, cus_address=?, cus_email=?, cus_mobile=?, cus_password=?, cus_updated_on=? WHERE cus_id=? AND company_id=?');
-        mysqli_stmt_bind_param($stmt, 'sssssiii', $name, $address, $email, $mobile, $password, $now, $customerId, $companyId);
+        if ($role === 'admin') {
+            $stmt = mysqli_prepare($con, 'UPDATE customers SET cus_name=?, cus_address=?, cus_email=?, cus_mobile=?, cus_password=?, cus_updated_on=? WHERE cus_id=?');
+            mysqli_stmt_bind_param($stmt, 'sssssii', $name, $address, $email, $mobile, $password, $now, $customerId);
+        } else {
+            $stmt = mysqli_prepare($con, 'UPDATE customers SET cus_name=?, cus_address=?, cus_email=?, cus_mobile=?, cus_password=?, cus_updated_on=? WHERE cus_id=? AND company_id=?');
+            mysqli_stmt_bind_param($stmt, 'sssssiii', $name, $address, $email, $mobile, $password, $now, $customerId, $companyId);
+        }
         mysqli_stmt_execute($stmt);
     } else {
         $stmt = mysqli_prepare($con, 'INSERT INTO customers (company_id, cus_name, cus_mobile, cus_address, cus_email, cus_password, cus_status, cus_created_on) VALUES (?, ?, ?, ?, ?, ?, 1, ?)');
@@ -211,17 +216,25 @@ if ($action === 'save_customer_inline') {
 
 if ($action === 'create_invoice') {
     $customerId = (int)($_POST['cust_id'] ?? 0);
-    $check = mysqli_prepare($con, 'SELECT cus_id FROM customers WHERE cus_id=? AND company_id=? LIMIT 1');
-    mysqli_stmt_bind_param($check, 'ii', $customerId, $companyId);
+    if ($role === 'admin') {
+        $check = mysqli_prepare($con, 'SELECT cus_id, company_id FROM customers WHERE cus_id=? LIMIT 1');
+        mysqli_stmt_bind_param($check, 'i', $customerId);
+    } else {
+        $check = mysqli_prepare($con, 'SELECT cus_id, company_id FROM customers WHERE cus_id=? AND company_id=? LIMIT 1');
+        mysqli_stmt_bind_param($check, 'ii', $customerId, $companyId);
+    }
     mysqli_stmt_execute($check);
     $checkResult = mysqli_stmt_get_result($check);
     if (!$checkResult || !mysqli_num_rows($checkResult)) {
         model_redirect('create_bill.php?error=3');
     }
+    $customerRow = mysqli_fetch_assoc($checkResult);
+    $invCompId = !empty($customerRow['company_id']) ? (int)$customerRow['company_id'] : $companyId;
+
     $total = (float)($_POST['totalPrice'] ?? 0);
     $now = time();
     $stmt = mysqli_prepare($con, 'INSERT INTO invoice (comp_id,cust_id,total_amt,created_date) VALUES (?,?,?,?)');
-    mysqli_stmt_bind_param($stmt, 'iidi', $companyId, $customerId, $total, $now);
+    mysqli_stmt_bind_param($stmt, 'iidi', $invCompId, $customerId, $total, $now);
     if (!mysqli_stmt_execute($stmt)) {
         model_redirect('create_bill.php?error=1');
     }
@@ -233,11 +246,11 @@ if ($action === 'create_invoice') {
             continue;
         }
         $price = (float)($_POST['price'][$i] ?? 0);
-        $qty = (int)($_POST['quantity'][$i] ?? 1);
+        $qty = (float)($_POST['quantity'][$i] ?? 1);
         $gst = (float)($_POST['gst'][$i] ?? 0);
         $line = (float)($_POST['totalAmt'][$i] ?? 0);
         $item = mysqli_prepare($con, 'INSERT INTO invoice_details (inv_id,product_name,price,quantity,gst,total_amt) VALUES (?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($item, 'isiddd', $invoiceId, $product, $price, $qty, $gst, $line);
+        mysqli_stmt_bind_param($item, 'isdddd', $invoiceId, $product, $price, $qty, $gst, $line);
         mysqli_stmt_execute($item);
     }
     model_redirect('invoice_list.php');
