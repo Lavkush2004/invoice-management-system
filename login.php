@@ -402,7 +402,6 @@ if ($isLoginSubmit) {
                 </div>
             </div>
         </div>
-        <p class="login-footer">Created by Luv Rajput</p>
     </div>
 <?php require_once __DIR__ . '/includes/chatbot_widget.php'; ?>
 <!-- Firebase Web SDK Compat -->
